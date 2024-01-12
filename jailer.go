@@ -448,7 +448,7 @@ func LinkFilesHandler(kernelImageFileName string) Handler {
 
 				// Check that we can read rootfs.ext4 after a symlink.
 				if _, err := os.Stat(filepath.Join(rootfs, driveFileName)); err != nil {
-					return errors.Wrapf(err, "rootfs.ext4 does not exist in %s", filepath.Join(rootfs, driveFileName))
+					return err
 				}
 
 				m.Cfg.Drives[i].PathOnHost = String(driveFileName)
