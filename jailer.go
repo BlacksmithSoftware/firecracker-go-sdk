@@ -438,7 +438,7 @@ func LinkFilesHandler(kernelImageFileName string) Handler {
 				hostPath := StringValue(drive.PathOnHost)
 				driveFileName := filepath.Base(hostPath)
 
-				if err := os.Link(
+				if err := os.Symlink(
 					hostPath,
 					filepath.Join(rootfs, driveFileName),
 				); err != nil {
