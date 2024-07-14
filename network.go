@@ -336,20 +336,24 @@ func (cniConf CNIConfiguration) invokeCNI(ctx context.Context, logger *log.Entry
 	var err error
 
 	if networkConf == nil {
+		beforeLoadConf := time.Now()
 		networkConf, err = libcni.LoadConfList(cniConf.ConfDir, cniConf.NetworkName)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load CNI configuration from dir %q for network %q: %w",
 				cniConf.ConfDir, cniConf.NetworkName, err), cleanupFuncs
 		}
+		logger.Infof("LoadConfList took %s", time.Since(beforeLoadConf))
 	}
 
 	runtimeConf := cniConf.asCNIRuntimeConf()
 
 	delNetworkFunc := func() error {
+		beforeDelNetwork := time.Now()
 		err := cniPlugin.DelNetworkList(ctx, networkConf, runtimeConf)
 		if err != nil {
 			return fmt.Errorf("failed to delete CNI network list %q: %w", cniConf.NetworkName, err)
 		}
+		logger.Infof("DelNetworkList took %s", time.Since(beforeDelNetwork))
 		return nil
 	}
 
@@ -376,10 +380,15 @@ func (cniConf CNIConfiguration) invokeCNI(ctx context.Context, logger *log.Entry
 	// case where AddNetworkList fails but leaves intermediate resources around like
 	// devices and ip allocations.
 	cleanupFuncs = append(cleanupFuncs, delNetworkFunc)
+	for _, net := range networkConf.Plugins {
+		logger.Infof("Adding network %s", net.Network.Name)
+	}
+	beforeAddNetwork := time.Now()
 	cniResult, err := cniPlugin.AddNetworkList(ctx, networkConf, runtimeConf)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create CNI network: %w", err), cleanupFuncs
 	}
+	logger.Infof("AddNetworkList took %s", time.Since(beforeAddNetwork))
 
 	return &cniResult, nil, cleanupFuncs
 }
