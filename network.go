@@ -20,6 +20,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/containernetworking/cni/libcni"
 	"github.com/containernetworking/cni/pkg/types"
@@ -103,10 +104,12 @@ func (networkInterfaces NetworkInterfaces) setupNetwork(
 
 	// Get the network interface with CNI configuration or, if there is none,
 	// just return right away.
+	beforeCNIInterface := time.Now()
 	cniNetworkInterface := networkInterfaces.cniInterface()
 	if cniNetworkInterface == nil {
 		return nil, cleanupFuncs
 	}
+	logger.Infof("CNI interface found in %s", time.Since(beforeCNIInterface))
 
 	cniNetworkInterface.CNIConfiguration.containerID = vmID
 	cniNetworkInterface.CNIConfiguration.netNSPath = netNSPath
@@ -114,23 +117,28 @@ func (networkInterfaces NetworkInterfaces) setupNetwork(
 
 	// Make sure the netns is setup. If the path doesn't yet exist, it will be
 	// initialized with a new empty netns.
-	err, netnsCleanupFuncs := cniNetworkInterface.CNIConfiguration.initializeNetNS()
+	beforeInitializeNetNS := time.Now()
+	err, netnsCleanupFuncs := cniNetworkInterface.CNIConfiguration.initializeNetNS(logger)
 	cleanupFuncs = append(cleanupFuncs, netnsCleanupFuncs...)
 	if err != nil {
 		return fmt.Errorf("failed to initialize netns: %w", err), cleanupFuncs
 	}
+	logger.Infof("NetNS initialized in %s", time.Since(beforeInitializeNetNS))
 
+	beforeInvokeCNI := time.Now()
 	cniResult, err, cniCleanupFuncs := cniNetworkInterface.CNIConfiguration.invokeCNI(ctx, logger)
 	cleanupFuncs = append(cleanupFuncs, cniCleanupFuncs...)
 	if err != nil {
 		return fmt.Errorf("failure when invoking CNI: %w", err), cleanupFuncs
 	}
+	logger.Infof("CNI invoked in %s", time.Since(beforeInvokeCNI))
 
 	// If static configuration is not already set for the network device, fill it out
 	// by parsing the CNI result object according to the specifications detailed in the
 	// vmconf package docs.
+	beforeStaticConf := time.Now()
 	if cniNetworkInterface.StaticConfiguration == nil {
-		vmNetConf, err := vmconf.StaticNetworkConfFrom(*cniResult, cniNetworkInterface.CNIConfiguration.containerID)
+		vmNetConf, err := vmconf.StaticNetworkConfFrom(*cniResult, cniNetworkInterface.CNIConfiguration.containerID, logger)
 		if err != nil {
 			return fmt.Errorf("failed to parse VM network configuration from CNI output, ensure CNI is configured with a plugin "+
 				"that supports automatic VM network configuration such as tc-redirect-tap"+": %w", err), cleanupFuncs
@@ -156,6 +164,7 @@ func (networkInterfaces NetworkInterfaces) setupNetwork(
 			}
 		}
 	}
+	logger.Infof("Static configuration filled out in %s", time.Since(beforeStaticConf))
 
 	return nil, cleanupFuncs
 }
@@ -377,9 +386,10 @@ func (cniConf CNIConfiguration) invokeCNI(ctx context.Context, logger *log.Entry
 
 // initializeNetNS checks to see if the netNSPath already exists, if it doesn't it will create
 // a new one mounted at that path.
-func (cniConf CNIConfiguration) initializeNetNS() (error, []func() error) {
+func (cniConf CNIConfiguration) initializeNetNS(logger *log.Entry) (error, []func() error) {
 	var cleanupFuncs []func() error
 
+	beforeIsNSorErr := time.Now()
 	err := ns.IsNSorErr(cniConf.netNSPath)
 	switch err.(type) {
 	case nil:
@@ -394,6 +404,7 @@ func (cniConf CNIConfiguration) initializeNetNS() (error, []func() error) {
 		// if something else bad happened return the error
 		return fmt.Errorf("failure checking if %q is a mounted netns: %w", cniConf.netNSPath, err), cleanupFuncs
 	}
+	logger.Infof("IsNSorErr took %s", time.Since(beforeIsNSorErr))
 
 	// the path doesn't exist, so we need to create a new netns and mount it at the path
 
@@ -439,6 +450,7 @@ func (cniConf CNIConfiguration) initializeNetNS() (error, []func() error) {
 	// separate OS thread that's discarded at the end of the call is the
 	// simplest way to prevent the namespace from leaking to other goroutines.
 	doneCh := make(chan error)
+	beforeUnshare := time.Now()
 	go func() {
 		defer close(doneCh)
 		// Lock the goroutine to the OS thread but don't ever unlock it. When
@@ -468,6 +480,7 @@ func (cniConf CNIConfiguration) initializeNetNS() (error, []func() error) {
 		})
 	}()
 
+	logger.Infof("Unshare and mount took %s", time.Since(beforeUnshare))
 	err = <-doneCh
 	return err, cleanupFuncs
 }
