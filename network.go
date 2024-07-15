@@ -380,9 +380,6 @@ func (cniConf CNIConfiguration) invokeCNI(ctx context.Context, logger *log.Entry
 	// case where AddNetworkList fails but leaves intermediate resources around like
 	// devices and ip allocations.
 	cleanupFuncs = append(cleanupFuncs, delNetworkFunc)
-	for _, net := range networkConf.Plugins {
-		logger.Infof("Adding network %s", net.Network.Name)
-	}
 	beforeAddNetwork := time.Now()
 	cniResult, err := cniPlugin.AddNetworkList(ctx, networkConf, runtimeConf)
 	if err != nil {
