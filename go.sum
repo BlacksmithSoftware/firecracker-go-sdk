@@ -34,6 +34,8 @@ github.com/Azure/go-autorest/autorest/mocks v0.4.0/go.mod h1:LTp+uSrOhSkaKrUy935
 github.com/Azure/go-autorest/autorest/mocks v0.4.1/go.mod h1:LTp+uSrOhSkaKrUy935gNZuuIPPVsHlr9DSOxSayd+k=
 github.com/Azure/go-autorest/logger v0.2.0/go.mod h1:T9E3cAhj2VqvPOtCYAvby9aBXkZmbF5NWuPV8+WeEW8=
 github.com/Azure/go-autorest/tracing v0.6.0/go.mod h1:+vhtPC754Xsa23ID7GlGsrdKBpUA79WCAKPPZVC2DeU=
+github.com/BlacksmithSoftware/cni v1.0.0-dev h1:KkJulSEIkrk7LP8uRsCzRxMRKDZ2z9F5hMcQDjCAYlY=
+github.com/BlacksmithSoftware/cni v1.0.0-dev/go.mod h1:AKuhXbN5EzmD4yTNtfSsX3tPcmtrBI6QcRV0NiNt15Y=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/Microsoft/go-winio v0.4.11/go.mod h1:VhR8bwka0BXejwEJY73c50VrPtXAaKcyvVC4A4RozmA=
@@ -176,11 +178,6 @@ github.com/containerd/zfs v0.0.0-20210301145711-11e8f1707f62/go.mod h1:A9zfAbMlQ
 github.com/containerd/zfs v0.0.0-20210315114300-dde8f0fda960/go.mod h1:m+m51S1DvAP6r3FcmYCp54bQ34pyOwTieQDNRIRHsFY=
 github.com/containerd/zfs v0.0.0-20210324211415-d5c4544f0433/go.mod h1:m+m51S1DvAP6r3FcmYCp54bQ34pyOwTieQDNRIRHsFY=
 github.com/containerd/zfs v1.0.0/go.mod h1:m+m51S1DvAP6r3FcmYCp54bQ34pyOwTieQDNRIRHsFY=
-github.com/containernetworking/cni v0.7.1/go.mod h1:LGwApLUm2FpoOfxTDEeq8T9ipbpZ61X79hmU3w8FmsY=
-github.com/containernetworking/cni v0.8.0/go.mod h1:LGwApLUm2FpoOfxTDEeq8T9ipbpZ61X79hmU3w8FmsY=
-github.com/containernetworking/cni v0.8.1/go.mod h1:LGwApLUm2FpoOfxTDEeq8T9ipbpZ61X79hmU3w8FmsY=
-github.com/containernetworking/cni v1.0.1 h1:9OIL/sZmMYDBe+G8svzILAlulUpaDTUjeAbtH/JNLBo=
-github.com/containernetworking/cni v1.0.1/go.mod h1:AKuhXbN5EzmD4yTNtfSsX3tPcmtrBI6QcRV0NiNt15Y=
 github.com/containernetworking/plugins v0.8.6/go.mod h1:qnw5mN19D8fIwkqW7oHHYDHVlzhJpcY6TQxn/fUyDDM=
 github.com/containernetworking/plugins v0.9.1/go.mod h1:xP/idU2ldlzN6m4p5LmGiwRDjeJr6FLK6vuiUwoH7P8=
 github.com/containernetworking/plugins v1.0.1 h1:wwCfYbTCj5FC0EJgyzyjTXmqysOiJE9r712Z+2KVZAk=
